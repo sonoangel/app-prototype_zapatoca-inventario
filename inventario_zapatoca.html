@@ -1,0 +1,605 @@
+<style>
+  :root {
+    --bg: #F5F6F4;
+    --surface: #FFFFFF;
+    --ink: #1B2430;
+    --muted: #667085;
+    --accent: #1F3A5F;
+    --accent-soft: #E7EDF5;
+    --cat-a: #2F9E44;
+    --cat-a-bg: #E6F6EA;
+    --cat-b: #C97A1A;
+    --cat-b-bg: #FDF1E0;
+    --cat-c: #D64545;
+    --cat-c-bg: #FBE6E6;
+    --border: #E1E4E8;
+  }
+  * { box-sizing: border-box; }
+  #inv-root {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    min-height: 100%;
+    padding: 0 0 40px 0;
+  }
+  .inv-header {
+    background: var(--accent);
+    color: white;
+    padding: 22px 28px 18px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .inv-barcode {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 26px;
+    margin-bottom: 14px;
+    opacity: 0.85;
+  }
+  .inv-barcode div { background: white; }
+  .inv-title-row { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
+  .inv-title {
+    font-family: "Arial Black", "Helvetica Neue", sans-serif;
+    font-weight: 900;
+    font-size: 26px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .inv-subtitle { font-size: 13px; color: #C9D6E8; margin-top: 2px; }
+  .inv-stats { display: flex; gap: 22px; }
+  .inv-stat { text-align: right; }
+  .inv-stat .n { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 22px; font-weight: 700; }
+  .inv-stat .l { font-size: 11px; color: #C9D6E8; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  .inv-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 28px;
+    background: var(--accent);
+    border-bottom: 3px solid #16293F;
+  }
+  .inv-tab {
+    padding: 10px 16px;
+    color: #C9D6E8;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -3px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .inv-tab:hover { color: white; }
+  .inv-tab.active { color: white; border-bottom-color: #E8A33D; }
+
+  .inv-body { padding: 22px 28px; max-width: 1100px; margin: 0 auto; }
+  .inv-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+  }
+  .inv-card h2 { font-size: 15px; margin: 0 0 4px 0; }
+  .inv-card .desc { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+
+  .inv-empty { text-align: center; padding: 30px 10px; color: var(--muted); font-size: 13px; }
+  .inv-empty b { display: block; color: var(--ink); font-size: 14px; margin-bottom: 4px; }
+
+  table.inv-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.inv-table th {
+    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;
+    color: var(--muted); padding: 6px 8px; border-bottom: 2px solid var(--border);
+  }
+  table.inv-table td { padding: 8px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.inv-table tr:last-child td { border-bottom: none; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-a { background: var(--cat-a-bg); color: var(--cat-a); }
+  .badge-b { background: var(--cat-b-bg); color: var(--cat-b); }
+  .badge-c { background: var(--cat-c-bg); color: var(--cat-c); }
+
+  .btn {
+    font-size: 12.5px; font-weight: 600; padding: 7px 14px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--ink);
+  }
+  .btn:hover { background: var(--bg); }
+  .btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn-primary:hover { background: #16293F; }
+  .btn-danger { color: var(--cat-c); }
+  .btn-sm { padding: 4px 9px; font-size: 11.5px; }
+
+  .inv-form-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-items: end; margin-bottom: 10px;}
+  .inv-form-grid label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 3px; }
+  .inv-form-grid input {
+    width: 100%; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+    font-family: inherit;
+  }
+  .row-actions { display: flex; gap: 6px; }
+
+  .cfg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .cfg-field { display: flex; flex-direction: column; gap: 4px; }
+  .cfg-field label { font-size: 12.5px; font-weight: 600; }
+  .cfg-field span.h { font-size: 11.5px; color: var(--muted); }
+  .cfg-field input { padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; width: 120px; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;}
+  .toolbar .actions { display: flex; gap: 8px; }
+  input[type=file] { display: none; }
+
+  .urgency-high { color: var(--cat-c); font-weight: 700; }
+  .urgency-mid { color: var(--cat-b); font-weight: 700; }
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: white; padding: 10px 18px; border-radius: 8px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 50;
+  }
+  .toast.show { opacity: 1; }
+</style>
+
+<div id="inv-root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+(function(){
+
+const STORAGE_KEY = "productos";
+const CONFIG_KEY = "config";
+
+const DEFAULT_CONFIG = {
+  dias_reposicion: 3,
+  stock_seguridad_default: 5,
+  umbral_a: 4,      // rotacion diaria >= umbral_a  -> A
+  umbral_b: 1,      // rotacion diaria >= umbral_b  -> B, si no -> C
+  dias_max_c: 30,    // dias de inventario para marcar candidato a retiro
+  cobertura_a: 15,
+  cobertura_b: 10,
+  cobertura_c: 5,
+};
+
+let state = {
+  tab: "pedido",
+  productos: [],
+  config: { ...DEFAULT_CONFIG },
+  loaded: false,
+  newRow: null,
+};
+
+const root = document.getElementById("inv-root");
+
+function uid() { return "p_" + Math.random().toString(36).slice(2, 10); }
+
+function getRecentSales(prod) {
+  if (prod.historial && prod.historial.length) {
+    const recientes = prod.historial.slice(-3);
+    const sumU = recientes.reduce((s, h) => s + (Number(h.unidades) || 0), 0);
+    const sumC = recientes.reduce((s, h) => s + (Number(h.cajas) || 0), 0);
+    return { unidadesProm: sumU / recientes.length, sumU, sumC, n: recientes.length };
+  }
+  const u = Number(prod.unidades) || 0;
+  const c = Number(prod.cajas) || 0;
+  return { unidadesProm: u, sumU: u, sumC: c, n: 1 };
+}
+
+function computeMetrics(prod, cfg) {
+  const ventas = getRecentSales(prod);
+  const rotacionDiaria = ventas.unidadesProm / 5;
+  const stock = Number(prod.stock) || 0;
+  const diasInventario = rotacionDiaria > 0 ? stock / rotacionDiaria : Infinity;
+  let categoria = "C";
+  if (rotacionDiaria >= cfg.umbral_a) categoria = "A";
+  else if (rotacionDiaria >= cfg.umbral_b) categoria = "B";
+
+  const stockSeguridad = prod.stock_seguridad != null && prod.stock_seguridad !== ""
+    ? Number(prod.stock_seguridad) : cfg.stock_seguridad_default;
+  const diasReposicion = prod.dias_reposicion != null && prod.dias_reposicion !== ""
+    ? Number(prod.dias_reposicion) : cfg.dias_reposicion;
+
+  const puntoReorden = rotacionDiaria * diasReposicion + stockSeguridad;
+
+  const cobertura = categoria === "A" ? cfg.cobertura_a : categoria === "B" ? cfg.cobertura_b : cfg.cobertura_c;
+  const cantidadSugerida = Math.max(0, Math.ceil(rotacionDiaria * cobertura - stock));
+
+  const unidadesPorCaja = ventas.sumC > 0 ? ventas.sumU / ventas.sumC : null;
+  const cajasSugeridas = unidadesPorCaja ? Math.ceil(cantidadSugerida / unidadesPorCaja) : null;
+
+  const necesitaPedido = categoria !== "C" && stock <= puntoReorden && rotacionDiaria > 0;
+  const candidatoRetiro = categoria === "C" && diasInventario > cfg.dias_max_c && stock > 0;
+
+  return { rotacionDiaria, diasInventario, categoria, puntoReorden, cantidadSugerida, unidadesPorCaja, cajasSugeridas, necesitaPedido, candidatoRetiro, nLecturas: ventas.n, unidadesProm: ventas.unidadesProm };
+}
+
+async function loadState() {
+  try {
+    const p = await window.storage.get(STORAGE_KEY, false);
+    state.productos = p ? JSON.parse(p.value) : [];
+  } catch (e) { state.productos = []; }
+  try {
+    const c = await window.storage.get(CONFIG_KEY, false);
+    state.config = c ? { ...DEFAULT_CONFIG, ...JSON.parse(c.value) } : { ...DEFAULT_CONFIG };
+  } catch (e) { state.config = { ...DEFAULT_CONFIG }; }
+  state.loaded = true;
+  render();
+}
+
+async function saveProductos() {
+  try { await window.storage.set(STORAGE_KEY, JSON.stringify(state.productos), false); }
+  catch (e) { showToast("No se pudo guardar. Intenta de nuevo."); }
+}
+async function saveConfig() {
+  try { await window.storage.set(CONFIG_KEY, JSON.stringify(state.config), false); }
+  catch (e) { showToast("No se pudo guardar la configuración."); }
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("inv-toast");
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+function barcodeStrip(n) {
+  let html = "";
+  for (let i = 0; i < n; i++) {
+    const w = [1,1,2,1,3,1,1,2][i % 8];
+    const h = 10 + ((i * 37) % 16);
+    html += `<div style="width:${w}px;height:${h}px;"></div>`;
+  }
+  return html;
+}
+
+function fmt(n) {
+  if (!isFinite(n)) return "—";
+  return Math.round(n * 10) / 10;
+}
+
+function setTab(t) { state.tab = t; render(); }
+
+function render() {
+  if (!state.loaded) {
+    root.innerHTML = `<div style="padding:60px;text-align:center;color:var(--muted);">Cargando…</div>`;
+    return;
+  }
+  const cfg = state.config;
+  const withMetrics = state.productos.map(p => ({ ...p, m: computeMetrics(p, cfg) }));
+  const nA = withMetrics.filter(p => p.m.categoria === "A").length;
+  const nPedidos = withMetrics.filter(p => p.m.necesitaPedido).length;
+  const nRetiro = withMetrics.filter(p => p.m.candidatoRetiro).length;
+
+  root.innerHTML = `
+    <div class="inv-header">
+      <div class="inv-barcode">${barcodeStrip(38)}</div>
+      <div class="inv-title-row">
+        <div>
+          <p class="inv-title">Bodega · Zapatoca</p>
+          <div class="inv-subtitle">Detergentes · Suavizantes · Ropa</div>
+        </div>
+        <div class="inv-stats">
+          <div class="inv-stat"><div class="n">${withMetrics.length}</div><div class="l">Referencias</div></div>
+          <div class="inv-stat"><div class="n">${nPedidos}</div><div class="l">Por pedir</div></div>
+          <div class="inv-stat"><div class="n">${nRetiro}</div><div class="l">A retirar</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="inv-tabs">
+      ${tabBtn("pedido", "Pedido sugerido")}
+      ${tabBtn("inventario", "Inventario")}
+      ${tabBtn("retiro", "Retirar de bodega")}
+      ${tabBtn("config", "Configuración")}
+    </div>
+    <div class="inv-body" id="inv-body"></div>
+    <div class="toast" id="inv-toast"></div>
+  `;
+
+  const body = document.getElementById("inv-body");
+  if (state.tab === "pedido") body.innerHTML = renderPedido(withMetrics);
+  else if (state.tab === "inventario") body.innerHTML = renderInventario(withMetrics);
+  else if (state.tab === "retiro") body.innerHTML = renderRetiro(withMetrics);
+  else if (state.tab === "config") body.innerHTML = renderConfig();
+
+  attachHandlers();
+}
+
+function tabBtn(id, label) {
+  return `<div class="inv-tab ${state.tab === id ? "active" : ""}" data-tab="${id}">${label}</div>`;
+}
+
+function renderPedido(items) {
+  const list = items.filter(p => p.m.necesitaPedido)
+    .sort((a, b) => (a.m.puntoReorden - a.stock) < (b.m.puntoReorden - b.stock) ? 1 : -1)
+    .sort((a, b) => a.stock / (a.m.puntoReorden||1) - b.stock / (b.m.puntoReorden||1));
+
+  if (items.length === 0) {
+    return `<div class="inv-card"><div class="inv-empty"><b>Todavía no hay productos cargados</b>Ve a la pestaña "Inventario" para agregar tus referencias.</div></div>`;
+  }
+  if (list.length === 0) {
+    return `<div class="inv-card"><div class="inv-empty"><b>No hay pedidos pendientes</b>Ningún producto ha alcanzado su punto de reorden por ahora.</div></div>`;
+  }
+
+  const rows = list.map(p => `
+    <tr>
+      <td class="mono">${p.barcode || "—"}</td>
+      <td>${p.nombre}</td>
+      <td>${categoryBadge(p.m.categoria)}</td>
+      <td class="mono">${p.stock}</td>
+      <td class="mono">${fmt(p.m.puntoReorden)}</td>
+      <td class="mono" style="font-weight:700;">${p.m.cantidadSugerida}</td>
+      <td class="mono" style="font-weight:700;">${p.m.cajasSugeridas != null ? p.m.cajasSugeridas : "—"}</td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="inv-card">
+      <h2>Pedido sugerido de hoy</h2>
+      <div class="desc">Productos que ya alcanzaron su punto de reorden, ordenados por urgencia. Las cajas se calculan a partir de las unidades y cajas que reportas vendidas cada 5 días.</div>
+      <table class="inv-table">
+        <thead><tr><th>Código</th><th>Producto</th><th>Cat.</th><th>Stock (uds)</th><th>Punto reorden</th><th>Uds a pedir</th><th>Cajas a pedir</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function categoryBadge(cat) {
+  const cls = cat === "A" ? "badge-a" : cat === "B" ? "badge-b" : "badge-c";
+  return `<span class="badge ${cls}">${cat}</span>`;
+}
+
+function renderInventario(items) {
+  const rows = items.map(p => `
+    <tr data-id="${p.id}">
+      <td class="mono">${p.barcode || "—"}</td>
+      <td>${p.nombre}</td>
+      <td class="mono">${fmt(p.m.unidadesProm)}<span style="color:var(--muted);font-size:11px;"> (prom. ${p.m.nLecturas} lect.)</span></td>
+      <td class="mono">${p.stock}</td>
+      <td>${categoryBadge(p.m.categoria)}</td>
+      <td class="mono">${isFinite(p.m.diasInventario) ? fmt(p.m.diasInventario) : "—"}</td>
+      <td class="row-actions">
+        <button class="btn btn-sm" data-action="edit" data-id="${p.id}">Registrar lectura</button>
+        <button class="btn btn-sm btn-danger" data-action="delete" data-id="${p.id}">Eliminar</button>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="inv-card">
+      <div class="toolbar">
+        <div>
+          <h2 style="margin-bottom:2px;">Inventario de la sección</h2>
+          <div class="desc" style="margin-bottom:0;">Carga aquí los datos que te da el Poke cada 5 días. El stock siempre va en unidades existentes, no en cajas — la app calcula sola cuántas unidades trae cada caja según lo que vendes. La rotación se calcula con el promedio de las últimas 3 lecturas, para que una semana atípica no distorsione el cálculo.</div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btn-import">Importar CSV</button>
+          <button class="btn" id="btn-export">Exportar CSV</button>
+          <button class="btn btn-primary" id="btn-add">+ Agregar producto</button>
+        </div>
+      </div>
+      <input type="file" id="file-import" accept=".csv" />
+      ${renderNewRowForm()}
+      ${items.length === 0 ? `<div class="inv-empty"><b>Aún no hay productos</b>Agrega uno manualmente o importa tu CSV.</div>` : `
+      <table class="inv-table">
+        <thead><tr><th>Código</th><th>Producto</th><th>Uds/5d</th><th>Stock (uds)</th><th>Cat.</th><th>Días inv.</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`}
+    </div>
+  `;
+}
+
+function renderNewRowForm() {
+  if (!state.newRow) return "";
+  const r = state.newRow;
+  return `
+    <div class="inv-form-grid" id="new-row-form">
+      <div><label>Código</label><input id="f-barcode" value="${r.barcode||""}" placeholder="7701..."/></div>
+      <div><label>Producto</label><input id="f-nombre" value="${r.nombre||""}" placeholder="Nombre"/></div>
+      <div><label>Uds vendidas / 5d</label><input id="f-unidades" type="number" value="${r.unidades||""}"/></div>
+      <div><label>Cajas / 5d</label><input id="f-cajas" type="number" value="${r.cajas||""}"/></div>
+      <div><label>Stock actual (unidades existentes)</label><input id="f-stock" type="number" value="${r.stock||""}"/></div>
+      <div class="row-actions">
+        <button class="btn btn-primary btn-sm" id="btn-save-row">Guardar</button>
+        <button class="btn btn-sm" id="btn-cancel-row">Cancelar</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderRetiro(items) {
+  const list = items.filter(p => p.m.candidatoRetiro);
+  if (list.length === 0) {
+    return `<div class="inv-card"><div class="inv-empty"><b>Sin candidatos por ahora</b>Ningún producto de baja rotación supera el máximo de días en bodega configurado.</div></div>`;
+  }
+  const rows = list.map(p => `
+    <tr>
+      <td class="mono">${p.barcode || "—"}</td>
+      <td>${p.nombre}</td>
+      <td class="mono">${p.stock}</td>
+      <td class="mono ${p.m.diasInventario > state.config.dias_max_c * 2 ? "urgency-high" : "urgency-mid"}">${fmt(p.m.diasInventario)} días</td>
+      <td><button class="btn btn-sm" data-action="delete" data-id="${p.id}">Retirar de bodega</button></td>
+    </tr>
+  `).join("");
+  return `
+    <div class="inv-card">
+      <h2>Candidatos a retirar de bodega</h2>
+      <div class="desc">Baja rotación con más de ${state.config.dias_max_c} días de inventario acumulado.</div>
+      <table class="inv-table">
+        <thead><tr><th>Código</th><th>Producto</th><th>Stock</th><th>Días de inventario</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderConfig() {
+  const c = state.config;
+  return `
+    <div class="inv-card">
+      <h2>Parámetros del sistema</h2>
+      <div class="desc">Ajusta estos valores según cómo se comporta tu sección.</div>
+      <div class="cfg-grid">
+        <div class="cfg-field"><label>Días de reposición (lead time)</label><span class="h">Días que tarda en llegar el pedido</span><input id="c-dias_reposicion" type="number" value="${c.dias_reposicion}"/></div>
+        <div class="cfg-field"><label>Stock de seguridad por defecto</label><span class="h">Unidades extra de colchón</span><input id="c-stock_seguridad_default" type="number" value="${c.stock_seguridad_default}"/></div>
+        <div class="cfg-field"><label>Umbral rotación diaria — Categoría A</label><span class="h">Uds/día para ser alta rotación</span><input id="c-umbral_a" type="number" value="${c.umbral_a}"/></div>
+        <div class="cfg-field"><label>Umbral rotación diaria — Categoría B</label><span class="h">Uds/día para ser rotación media</span><input id="c-umbral_b" type="number" value="${c.umbral_b}"/></div>
+        <div class="cfg-field"><label>Días máximos en bodega (categoría C)</label><span class="h">Para marcar candidato a retiro</span><input id="c-dias_max_c" type="number" value="${c.dias_max_c}"/></div>
+        <div class="cfg-field"><label>Cobertura objetivo A (días)</label><span class="h">Días de stock a cubrir al pedir</span><input id="c-cobertura_a" type="number" value="${c.cobertura_a}"/></div>
+        <div class="cfg-field"><label>Cobertura objetivo B (días)</label><span class="h"></span><input id="c-cobertura_b" type="number" value="${c.cobertura_b}"/></div>
+        <div class="cfg-field"><label>Cobertura objetivo C (días)</label><span class="h"></span><input id="c-cobertura_c" type="number" value="${c.cobertura_c}"/></div>
+      </div>
+      <div style="margin-top:16px;"><button class="btn btn-primary" id="btn-save-config">Guardar configuración</button></div>
+    </div>
+  `;
+}
+
+function attachHandlers() {
+  document.querySelectorAll("[data-tab]").forEach(el => {
+    el.addEventListener("click", () => setTab(el.dataset.tab));
+  });
+
+  const btnAdd = document.getElementById("btn-add");
+  if (btnAdd) btnAdd.addEventListener("click", () => { state.newRow = {}; render(); });
+
+  const btnCancel = document.getElementById("btn-cancel-row");
+  if (btnCancel) btnCancel.addEventListener("click", () => { state.newRow = null; render(); });
+
+  const btnSaveRow = document.getElementById("btn-save-row");
+  if (btnSaveRow) btnSaveRow.addEventListener("click", async () => {
+    const nombre = document.getElementById("f-nombre").value.trim();
+    if (!nombre) { showToast("Ponle un nombre al producto."); return; }
+    const nuevo = {
+      id: uid(),
+      barcode: document.getElementById("f-barcode").value.trim(),
+      nombre,
+      unidades: Number(document.getElementById("f-unidades").value) || 0,
+      cajas: Number(document.getElementById("f-cajas").value) || 0,
+      stock: Number(document.getElementById("f-stock").value) || 0,
+    };
+    nuevo.historial = [{ unidades: nuevo.unidades, cajas: nuevo.cajas, ts: Date.now() }];
+    state.productos.push(nuevo);
+    state.newRow = null;
+    await saveProductos();
+    showToast("Producto agregado.");
+    render();
+  });
+
+  document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+    btn.addEventListener("click", async () => {
+      state.productos = state.productos.filter(p => p.id !== btn.dataset.id);
+      await saveProductos();
+      showToast("Producto eliminado.");
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-action="edit"]').forEach(btn => {
+    btn.addEventListener("click", () => openEdit(btn.dataset.id));
+  });
+
+  const btnSaveConfig = document.getElementById("btn-save-config");
+  if (btnSaveConfig) btnSaveConfig.addEventListener("click", async () => {
+    const ids = ["dias_reposicion","stock_seguridad_default","umbral_a","umbral_b","dias_max_c","cobertura_a","cobertura_b","cobertura_c"];
+    ids.forEach(id => {
+      const el = document.getElementById("c-" + id);
+      if (el) state.config[id] = Number(el.value);
+    });
+    await saveConfig();
+    showToast("Configuración guardada.");
+    render();
+  });
+
+  const btnExport = document.getElementById("btn-export");
+  if (btnExport) btnExport.addEventListener("click", () => {
+    const csv = Papa.unparse(state.productos.map(p => ({
+      codigo: p.barcode, nombre: p.nombre, unidades_5d: p.unidades, cajas_5d: p.cajas, stock: p.stock
+    })));
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "inventario_zapatoca.csv"; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  const btnImport = document.getElementById("btn-import");
+  const fileInput = document.getElementById("file-import");
+  if (btnImport && fileInput) {
+    btnImport.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      Papa.parse(file, {
+        header: true, skipEmptyLines: true,
+        complete: async (res) => {
+          let added = 0, updated = 0;
+          res.data.forEach(row => {
+            const norm = {};
+            Object.keys(row).forEach(k => norm[k.trim().toLowerCase()] = row[k]);
+            const barcode = norm.codigo || norm.barcode || "";
+            const nombre = norm.nombre || norm.producto || "";
+            if (!nombre) return;
+            const existing = state.productos.find(p => p.barcode && p.barcode === barcode);
+            const nuevaLectura = {
+              unidades: Number(norm.unidades_5d || norm.unidades || 0),
+              cajas: Number(norm.cajas_5d || norm.cajas || 0),
+            };
+            const nuevoStock = Number(norm.stock || norm.stock_actual || 0);
+            if (existing) {
+              if (!existing.historial) {
+                existing.historial = existing.unidades != null ? [{ unidades: Number(existing.unidades) || 0, cajas: Number(existing.cajas) || 0, ts: existing.ts || Date.now() }] : [];
+              }
+              existing.historial.push({ ...nuevaLectura, ts: Date.now() });
+              if (existing.historial.length > 6) existing.historial = existing.historial.slice(-6);
+              existing.nombre = nombre;
+              existing.stock = nuevoStock;
+              existing.unidades = nuevaLectura.unidades;
+              existing.cajas = nuevaLectura.cajas;
+              updated++;
+            } else {
+              state.productos.push({
+                id: uid(), barcode, nombre, stock: nuevoStock,
+                unidades: nuevaLectura.unidades, cajas: nuevaLectura.cajas,
+                historial: [{ ...nuevaLectura, ts: Date.now() }],
+              });
+              added++;
+            }
+          });
+          await saveProductos();
+          showToast(`Importado: ${added} nuevos, ${updated} actualizados.`);
+          fileInput.value = "";
+          render();
+        }
+      });
+    });
+  }
+}
+
+function openEdit(id) {
+  const p = state.productos.find(x => x.id === id);
+  if (!p) return;
+  const nuevoStock = prompt(`Stock actual de "${p.nombre}" (unidades existentes):`, p.stock);
+  if (nuevoStock === null) return;
+  const nuevasUnidades = prompt(`Unidades vendidas en los últimos 5 días:`, "");
+  if (nuevasUnidades === null) return;
+  const nuevasCajas = prompt(`Cajas vendidas en los últimos 5 días:`, "");
+  if (nuevasCajas === null) return;
+
+  p.stock = Number(nuevoStock) || 0;
+  if (!p.historial) {
+    p.historial = p.unidades != null ? [{ unidades: Number(p.unidades) || 0, cajas: Number(p.cajas) || 0, ts: p.ts || Date.now() }] : [];
+  }
+  p.historial.push({ unidades: Number(nuevasUnidades) || 0, cajas: Number(nuevasCajas) || 0, ts: Date.now() });
+  if (p.historial.length > 6) p.historial = p.historial.slice(-6);
+  // se mantienen unidades/cajas por compatibilidad, pero el cálculo usa el historial
+  p.unidades = p.historial[p.historial.length - 1].unidades;
+  p.cajas = p.historial[p.historial.length - 1].cajas;
+
+  saveProductos().then(() => { showToast("Nueva lectura registrada."); render(); });
+}
+
+loadState();
+})();
+</script>
